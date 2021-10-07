@@ -1,24 +1,18 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { User } = require('../../models');
-const { appKey, tokenExpiresIn } = require('../../../config/app');
-const InvalidCredentialException = require('../../exception/invalid-credential-exception');
+const InvalidCredentialException = require('../../exceptions/invalid-credential-exception');
+const UserRepository = require('../../repositories/user-repository');
+const AuthService = require('../../services/auth-service');
 
 class AuthController {
   async login(req, res) {
     const { email, password } = req.body;
 
-    const user = await User.findOne({
-      where: {
-        email,
-      },
-    });
+    const user = await UserRepository.findByEmail(email);
 
-    if (!user) {
-      throw new InvalidCredentialException('Invalid Login Credentials');
-    }
+    // if (!user) {
+    //   throw new InvalidCredentialException('Invalid Login Credentials');
+    // }
 
-    if (!(await bcrypt.compare(password, user.password))) {
+    if (!(await AuthService.isPasswordAMatch(password, user.password))) {
       throw new InvalidCredentialException('Invalid Login Credentials');
     }
 
@@ -28,10 +22,8 @@ class AuthController {
       firstName: user.firstName,
       lastName: user.lastName,
     };
-    const accessToken = jwt.sign(payload, appKey, {
-      expiresIn: tokenExpiresIn,
-    });
     // const key = require('crypto').randomBytes(64).toString('hex');
+    const accessToken = await AuthService.generateToken(payload);
 
     res.send({ user, ...{ accessToken } });
   }
