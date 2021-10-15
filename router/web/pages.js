@@ -2,7 +2,7 @@ const PageControllers = require('../../app/controllers/web/page-controller');
 
 module.exports = {
   group: {
-    prefix: '/naenroo-store',
+    prefix: '/',
   },
   routes: [
     {
@@ -12,12 +12,12 @@ module.exports = {
     },
     {
       method: 'get',
-      path: '/product',
+      path: 'product',
       handler: PageControllers.product,
     },
     {
       method: 'get',
-      path: '/about',
+      path: 'about',
       handler: PageControllers.about,
     },
   ],

@@ -1,14 +1,22 @@
+const logger = require('../../modules/logger');
+
 class PageController {
-  home(req, res) {
-    res.send('Home Page');
+  async home(req, res) {
+    // res.send('Home Page');
+
+    logger.info('Info Message');
+
+    res.render('home');
   }
 
-  product(req, res) {
-    res.send('Product Page');
+  async product(req, res) {
+    // res.send('Product Page');
+    res.render('product');
   }
 
-  about(req, res) {
-    res.send('About Page');
+  async about(req, res) {
+    // res.send('About Page');
+    res.render('about');
   }
 }
 

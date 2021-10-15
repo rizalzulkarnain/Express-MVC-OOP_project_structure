@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      this.hasMany(models.RefreshToken, { foreignKey: 'userId' });
     }
   }
   User.init(
@@ -22,8 +23,8 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: 'User',
-      underscored: true,
       tableName: 'Users',
+      underscored: true,
       hooks: {
         beforeCreate: hashPassword,
         beforeUpdate: hashPassword,
