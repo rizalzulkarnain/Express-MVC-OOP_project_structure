@@ -13,8 +13,12 @@ class Tokenizer {
     });
   }
 
-  generateRefreshToken(length = 40) {
+  generateRandomToken(length = 40) {
     return crypto.randomBytes(length).toString('hex');
+  }
+
+  generateRefreshToken(length = 40) {
+    return this.generateRandomToken(length);
   }
 }
 

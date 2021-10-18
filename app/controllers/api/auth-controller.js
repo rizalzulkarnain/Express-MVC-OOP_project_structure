@@ -37,6 +37,9 @@ class AuthController {
       password,
     };
 
+    const user = await UserRepository.create(data);
+    const tokens = await AuthService.generateTokens(data);
+
     await Mail.send('email-verification', (message) => {
       message
         .from(mailConfig.form)
@@ -49,7 +52,7 @@ class AuthController {
         });
     });
 
-    res.send(parsedResponse(user, tokens));
+    res.send(this._parsedResponse(user, tokens));
   }
 
   _parsedResponse(user, tokens) {
@@ -64,17 +67,5 @@ class AuthController {
     };
   }
 }
-
-const parsedResponse = (user, tokens) => {
-  return {
-    user: {
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    },
-    ...tokens,
-  };
-};
 
 module.exports = new AuthController();

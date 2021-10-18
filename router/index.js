@@ -2,6 +2,9 @@ const express = require('express');
 const webRoutes = require('./web');
 const apiRoutes = require('./api');
 const logger = require('../app/modules/logger');
+const appConfig = require('../config/app');
+const BaseException = require('../app/exceptions/base-exception');
+const path = require('path');
 
 class Router {
   constructor() {
@@ -31,10 +34,36 @@ class Router {
   _handleExceptions() {
     this.router.use((err, req, res, next) => {
       err.statusCode = err.status || err.statusCode || 500;
-
       logger.error(err.message);
 
-      return res.status(err.statusCode).send(err.message);
+      const expectJson = /application\/json/.test(req.get('accept'));
+
+      if (
+        appConfig.appEnv === 'production' &&
+        !(err instanceof BaseException)
+      ) {
+        if (expectJson) {
+          return res
+            .status(err.statusCode)
+            .send(errorResponse(err.statusCode, 'Something went Wrong!'));
+        }
+        const page = getErrorPage(err.statusCode);
+        return res.render(`errors/${page}-page`, {
+          message: 'Something went Wrong!',
+        });
+      }
+
+      if (expectJson) {
+        return res.status(err.statusCode).send({
+          message: err.message,
+          status: err.statusCode,
+        });
+      }
+
+      const page = getErrorPage(err.statusCode);
+      res.render(`errors/${page}-page`, {
+        message: err.message || 'Something went Wrong!',
+      });
     });
   }
 
@@ -45,6 +74,7 @@ class Router {
   }
 
   _attachMiddleware() {
+    this.router.use(express.static(path.join(__dirname, '../public')));
     this.router.use(express.json());
   }
 
@@ -74,5 +104,34 @@ class Router {
     });
   }
 }
+
+const errorResponse = (status, message) => {
+  return {
+    message,
+    status,
+  };
+};
+
+const getErrorPage = (status) => {
+  let page = ``;
+
+  switch (status) {
+    case 404:
+      page = 404;
+      break;
+    case 422:
+      page = 400;
+      break;
+    case 403:
+      page = 400;
+      break;
+    case 401:
+      page = 400;
+      break;
+    default:
+      page = 500;
+  }
+  return page;
+};
 
 module.exports = new Router(this.router);
